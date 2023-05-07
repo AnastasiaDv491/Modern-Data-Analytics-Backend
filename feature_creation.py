@@ -44,6 +44,8 @@ def createHolidaysDaysoftheWeek(df):
     for start_date, end_date in down_season:
         is_downseason = is_downseason | ((df['night_scale'] >= start_date) & (df['night_scale'] <= end_date))
     df['downseason'] = is_downseason.astype(int)
+    df['night_hour_sq'] = df['night_hour']**2
+    df['night_hour_cu'] = df['night_hour']**3
     return df
 
 for df in collection_dfs:
