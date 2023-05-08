@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from geopy.geocoders import Nominatim
 import pandas as pd
+from datetime import datetime
 
 # Time regrouping
 # Noise.py
@@ -34,7 +35,20 @@ def createHolidaysDaysoftheWeek(df):
     df["weekday"] = df['night_scale'].dt.day_name()
     holiday = ["01-01-2022", "18-04-2022", "16-05-2022", "21-07-2022", "25-08-2022", "01-11-2022", "02-11-2022","11-11-2022", "25-12-2022"]
     is_holiday = df['night'].isin(holiday)
+   
     df['Holiday']=is_holiday.map({True: 1, False:0})
+    down_season = [
+        (datetime.strptime("2021-12-31 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-02-13 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-04-02 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-04-19 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-05-28 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-09-26 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-12-24 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2023-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')),
+    ]
+    is_downseason = False
+    for start_date, end_date in down_season:
+        is_downseason = is_downseason | ((df['night_scale'] >= start_date) & (df['night_scale'] <= end_date))
+    df['downseason'] = is_downseason.astype(int)
+    df['night_hour_sq'] = df['night_hour']**2
+    df['night_hour_cu'] = df['night_hour']**3
     return df
 
 for df in collection_dfs:
