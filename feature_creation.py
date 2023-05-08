@@ -4,6 +4,8 @@ from geopy.geocoders import Nominatim
 import pandas as pd
 
 # Time regrouping
+# Noise.py
+
 def TimeBasedRegrouping(parquet):
     df = pd.read_parquet(parquet)
 
@@ -16,6 +18,7 @@ def TimeBasedRegrouping(parquet):
 
     return df
 
+# Noise.py
 # loop over parquet files & create dataframes. Store them in a list
 collection_dfs = []
 directory = "Dataset/"
@@ -37,7 +40,7 @@ def createHolidaysDaysoftheWeek(df):
 for df in collection_dfs:
     createHolidaysDaysoftheWeek(df)
 
-# Latitude and Longitude
+# Helper function: Latitude and Longitude
 
 # Initialize Nominatim API
 geolocator = Nominatim(user_agent="Mozilla/5.0")
