@@ -55,18 +55,47 @@ def createHolidaysDaysoftheWeek(df):
 for df in collection_dfs:
     createHolidaysDaysoftheWeek(df)
 
+
+night_81 = collection_dfs[0]
+night_calverie = collection_dfs[1]
+night_filosovia = collection_dfs[2]
+night_hears = collection_dfs[3]
+night_maxim = collection_dfs[4]
+night_taste = collection_dfs[5]
+night_vrijthof = collection_dfs[6]
+night_xior = collection_dfs[7]
+
+night_81.to_csv('Dataset/night_datasets_KADI/night_81.csv')
+night_calverie.to_csv('Dataset/night_datasets_KADI/night_calverie.csv')
+night_filosovia.to_csv('Dataset/night_datasets_KADI/night_filosovia.csv')
+night_hears.to_csv('Dataset/night_datasets_KADI/night_hears.csv')
+night_maxim.to_csv('Dataset/night_datasets_KADI/night_maxim.csv')
+night_taste.to_csv('Dataset/night_datasets_KADI/night_taste.csv')
+night_vrijthof.to_csv('Dataset/night_datasets_KADI/night_vrijthof.csv')
+night_xior.to_csv('Dataset/night_datasets_KADI/night_xior.csv')
+
+night_collection = [night_81, night_calverie, night_filosovia, night_hears, night_maxim, night_taste, night_vrijthof, night_xior]
+
 def mergeEventsNoise(file_path, noise_file, dist_column):
     df_noise = pd.read_csv(noise_file)
     df_events_dist = pd.read_excel(file_path)
-    
-    df = pd.merge(df_noise,df_events_dist[['Date', dist_column]],on='Date', how='outer')
+    df_events_dist['Date'] = df_events_dist['Date'].apply(lambda x: x.strftime("%d-%m-%Y") if isinstance(x, datetime) else x)
 
-    df = pd.to_csv(noise_file)
-    # if a name of the column matche 
-    # give path, df, and column name 
+    df = pd.merge(df_noise,df_events_dist[['Date', "Event_name", "Address","Lat","Long","Time","Duration","Event_type","Organizer","Respondents",dist_column]],on='Date', how='outer')
+
+    df.to_csv(noise_file)
     print(df)
 mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_81.csv", "Dist_81")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_calverie.csv", "Dist_calvariekapel")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_filosovia.csv", "Dist_filosofia")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_hears.csv", "Dist_hears")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_maxim.csv", "Dist_maxim")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_taste.csv", "Dist_taste")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_vrijthof.csv", "Dist_vrijthof")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_xior.csv", "Dist_xior")
 
+
+# Helper function: Latitude and Longitude
 
 # Initialize Nominatim API
 geolocator = Nominatim(user_agent="Mozilla/5.0")
