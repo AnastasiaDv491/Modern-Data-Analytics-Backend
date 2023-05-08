@@ -15,7 +15,7 @@ def TimeBasedRegrouping(parquet):
     df['night_scale'] = pd.to_datetime(df['night_scale'])
     #night from monday to tuesday counted as monday
     df.loc[:, 'night_hour'] = (df['night_scale'].dt.hour + df['night_scale'].dt.minute/60) - 11
-    df.loc[:, 'night'] = df['night_scale'].dt.strftime('%d-%m-%Y')
+    df.loc[:, 'Date'] = df['night_scale'].dt.strftime('%d-%m-%Y')
 
     return df
 
@@ -34,7 +34,7 @@ for filename in os.listdir(directory):
 def createHolidaysDaysoftheWeek(df):
     df["weekday"] = df['night_scale'].dt.day_name()
     holiday = ["01-01-2022", "18-04-2022", "16-05-2022", "21-07-2022", "25-08-2022", "01-11-2022", "02-11-2022","11-11-2022", "25-12-2022"]
-    is_holiday = df['night'].isin(holiday)
+    is_holiday = df['Date'].isin(holiday)
    
     df['Holiday']=is_holiday.map({True: 1, False:0})
     down_season = [
@@ -51,8 +51,10 @@ def createHolidaysDaysoftheWeek(df):
     df['night_hour_cu'] = df['night_hour']**3
     return df
 
+
 for df in collection_dfs:
     createHolidaysDaysoftheWeek(df)
+
 
 night_81 = collection_dfs[0]
 night_calverie = collection_dfs[1]
@@ -73,6 +75,25 @@ night_vrijthof.to_csv('Dataset/night_datasets_KADI/night_vrijthof.csv')
 night_xior.to_csv('Dataset/night_datasets_KADI/night_xior.csv')
 
 night_collection = [night_81, night_calverie, night_filosovia, night_hears, night_maxim, night_taste, night_vrijthof, night_xior]
+
+def mergeEventsNoise(file_path, noise_file, dist_column):
+    df_noise = pd.read_csv(noise_file)
+    df_events_dist = pd.read_excel(file_path)
+    df_events_dist['Date'] = df_events_dist['Date'].apply(lambda x: x.strftime("%d-%m-%Y") if isinstance(x, datetime) else x)
+
+    df = pd.merge(df_noise,df_events_dist[['Date', "Event_name", "Address","Lat","Long","Time","Duration","Event_type","Organizer","Respondents",dist_column]],on='Date', how='outer')
+
+    df.to_csv(noise_file)
+    print(df)
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_81.csv", "Dist_81")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_calverie.csv", "Dist_calvariekapel")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_filosovia.csv", "Dist_filosofia")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_hears.csv", "Dist_hears")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_maxim.csv", "Dist_maxim")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_taste.csv", "Dist_taste")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_vrijthof.csv", "Dist_vrijthof")
+mergeEventsNoise("./event_datasets/events_distances.xlsx", "./Dataset/night_datasets_KADI/night_xior.csv", "Dist_xior")
+
 
 # Helper function: Latitude and Longitude
 

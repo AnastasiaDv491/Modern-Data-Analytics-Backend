@@ -22,10 +22,10 @@ def dist(lat1, lon1, lat2, lon2):
 events['Dist_filosofia'] = 0
 events['Dist_xior'] = 0
 events['Dist_calvariekapel'] = 0
-events['Dist_His&Hairs'] = 0
-events['Dist_Eighty_one'] = 0
-events['Dist_Maxim'] = 0
-events['Dist_Taste'] = 0
+events['Dist_hears'] = 0
+events['Dist_81'] = 0
+events['Dist_maxim'] = 0
+events['Dist_taste'] = 0
 events['Dist_vrijthof'] = 0
 
 distances = []
