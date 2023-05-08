@@ -1,9 +1,15 @@
 import glob
 import pandas as pd
 from datetime import datetime
-
+from geopy.geocoders import Nominatim
 from boto.s3.key import Key
-from .feature_creation import createLatLongCols 
+import os
+from cProfile import label
+from turtle import goto
+import pandas as pd
+from geopy.distance import lonlat, distance
+import os
+
 
 # Read csv files and create parquet files and df 
 def createDataFiles( file_path_end, path):
@@ -25,7 +31,7 @@ def createDataFiles( file_path_end, path):
     df_name.to_parquet(f"Dataset/full_{file_path_end}_df.parquet")
         
     return df_name
-    # df_name = df
+    df_name = df
 
 # Only uncomment if you need to change something to the structure of the file
 # df_taste = createDataFiles( file_path_end="taste",path= 'C:/Users/nastj/Downloads/Full Data Set/')
