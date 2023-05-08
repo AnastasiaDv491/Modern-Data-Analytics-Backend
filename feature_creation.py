@@ -54,6 +54,26 @@ def createHolidaysDaysoftheWeek(df):
 for df in collection_dfs:
     createHolidaysDaysoftheWeek(df)
 
+night_81 = collection_dfs[0]
+night_calverie = collection_dfs[1]
+night_filosovia = collection_dfs[2]
+night_hears = collection_dfs[3]
+night_maxim = collection_dfs[4]
+night_taste = collection_dfs[5]
+night_vrijthof = collection_dfs[6]
+night_xior = collection_dfs[7]
+
+night_81.to_csv('Dataset/night_datasets_KADI/night_81.csv')
+night_calverie.to_csv('Dataset/night_datasets_KADI/night_calverie.csv')
+night_filosovia.to_csv('Dataset/night_datasets_KADI/night_filosovia.csv')
+night_hears.to_csv('Dataset/night_datasets_KADI/night_hears.csv')
+night_maxim.to_csv('Dataset/night_datasets_KADI/night_maxim.csv')
+night_taste.to_csv('Dataset/night_datasets_KADI/night_taste.csv')
+night_vrijthof.to_csv('Dataset/night_datasets_KADI/night_vrijthof.csv')
+night_xior.to_csv('Dataset/night_datasets_KADI/night_xior.csv')
+
+night_collection = [night_81, night_calverie, night_filosovia, night_hears, night_maxim, night_taste, night_vrijthof, night_xior]
+
 # Helper function: Latitude and Longitude
 
 # Initialize Nominatim API
