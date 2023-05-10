@@ -2,6 +2,7 @@ import pandas as pd
 import re
 
 df = pd.read_csv('df_stuk.csv')
+# get room capacity of Stuk rooms
 df_STUK_locations_capacity = pd.read_excel("C:/Users/nastj/OneDrive - KU Leuven/Desktop/MDA project/Project notes/room_capacity_stuk.xlsx")
 
 def cleanDFStuk(df, df_capacity):
@@ -32,7 +33,7 @@ def cleanDFStuk(df, df_capacity):
     df_capacity.rename(columns = {"Room": "Location"}, inplace = True)
 
     df_stuk_events = pd.merge(df, df_capacity[["Responded","Location"]],on='Location', how='left')
-    df_stuk_events.to_csv("df_stuk_events.csv", index = False)
+    df_stuk_events.to_csv("./Dataset/events_data/df_stuk.csv", index = False)
     return df_stuk_events
 
 cleanDFStuk(df, df_STUK_locations_capacity)

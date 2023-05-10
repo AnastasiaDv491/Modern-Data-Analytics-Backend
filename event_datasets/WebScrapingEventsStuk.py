@@ -71,7 +71,7 @@ except (TimeoutException,NoSuchElementException):
     
     # create and save dataframe with scraped elements
     df = pd.DataFrame({'Name': names, 'Address': addresses, 'Date': datetime, "Location": locations, "Organizer" : organizer, "Event type": eventtype})
-    df.to_csv('df_stuk.csv',index=False)
+    df.to_csv('./Dataset/events_data/df_stuk.csv',index=False)
 
     # quit driver to avoid MultiEntries error
     driver.quit()

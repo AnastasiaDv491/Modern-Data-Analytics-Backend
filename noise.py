@@ -1,46 +1,171 @@
-import glob
+import pandas as pd
+import os
+from geopy.geocoders import Nominatim
 import pandas as pd
 from datetime import datetime
-from geopy.geocoders import Nominatim
-from boto.s3.key import Key
-import os
-from cProfile import label
-from turtle import goto
-import pandas as pd
-from geopy.distance import lonlat, distance
-import os
+from sklearn.model_selection import train_test_split
+
+# Time regrouping
+# Noise.py
+
+def TimeBasedRegrouping(parquet):
+    df = pd.read_parquet(parquet)
+
+    df = df.loc[(df['result_timestamp'].dt.hour <= 7) | (df['result_timestamp'].dt.hour >= 19)]
+    df.loc[:, 'night_scale'] = (df['result_timestamp'] - pd.Timedelta(hours=8)).dt.strftime('%d-%m-%Y %H:%M')
+    df['night_scale'] = pd.to_datetime(df['night_scale'])
+    #night from monday to tuesday counted as monday
+    df.loc[:, 'night_hour'] = (df['night_scale'].dt.hour + df['night_scale'].dt.minute/60) - 11
+    df.loc[:, 'Date'] = df['night_scale'].dt.strftime('%d-%m-%Y')
+
+    return df
+
+# Noise.py
+# loop over parquet files & create dataframes. Store them in a list
+collection_dfs = []
+directory = "Dataset/parquet/"
+for filename in os.listdir(directory):
+    df_parquet = os.path.join(directory, filename)
+    # checking if it is a file
+    if os.path.isfile(df_parquet):
+        df = TimeBasedRegrouping(df_parquet)
+        collection_dfs.append(df)
 
 
-# Read csv files and create parquet files and df 
-def createDataFiles( file_path_end, path):
-    '''
-    Loops over the provided file path ends & retrieves csv files to create parquet files 
-    file_path_end: last word before .csv in your csv files
-    path: local path to where the data is stored. 
-    '''    
-    df_list = (pd.read_csv(file, sep = ";")
-    for file in glob.glob(path + "/*/*"+f'{file_path_end}'+".csv") )
-    df_name = pd.concat(df_list, ignore_index=True)
-    df_name = df_name[['result_timestamp','lamax','laeq','lceq','lcpeak']]
+night_81 = collection_dfs[0]
+night_calverie = collection_dfs[1]
+night_filosovia = collection_dfs[2]
+night_hears = collection_dfs[3]
+night_maxim = collection_dfs[4]
+night_taste = collection_dfs[5]
+night_vrijthof = collection_dfs[6]
+night_xior = collection_dfs[7]
+night_collection = [night_81, night_calverie, night_filosovia, night_hears, night_maxim, night_taste, night_vrijthof, night_xior]
 
-    df_name['result_timestamp'] =df_name['result_timestamp'].apply(lambda x: datetime.strptime(x, '%d/%m/%Y %H:%M:%S.%f'))
+def mergeEventsNoise(file_path, noise_df, dist_column, output_name):
+     # use the dataframes from the collection "night_collection" to merge 
+    df_events_dist = pd.read_excel(file_path)
+    df_events_dist['Date'] = df_events_dist['Date'].apply(lambda x: x.strftime("%d-%m-%Y") if isinstance(x, datetime) else x)
 
-    df_name.sort_values(by=['result_timestamp'],inplace=True)
-    df_name =df_name.resample('20min',closed = 'right', on='result_timestamp').mean()
-    df_name.reset_index(inplace=True)
-    df_name.to_parquet(f"Dataset/full_{file_path_end}_df.parquet")
-        
-    return df_name
-    df_name = df
+    df = pd.merge(noise_df,df_events_dist[['Date', "Event_name", "Address","Lat","Long","Time","Duration","Event_type","Organizer","Respondents",dist_column]],on='Date', how='outer')
+    path = "./Dataset/merged_dataset/"
+    # check if the directory exists; if not create it
+    if os.path.isdir(path) == False:
+        os.mkdir(path)
 
-# Only uncomment if you need to change something to the structure of the file
-# df_taste = createDataFiles( file_path_end="taste",path= 'C:/Users/nastj/Downloads/Full Data Set/')
-# df_vrijthof = createDataFiles(file_path_end="vrijthof",path= 'C:/Users/nastj/Downloads/Full Data Set/')
-# df_hears= createDataFiles(file_path_end="hears",path= 'C:/Users/nastj/Downloads/Full Data Set/')
-# df_81= createDataFiles(file_path_end="81",path= 'C:/Users/nastj/Downloads/Full Data Set/')
-# df_filosovia= createDataFiles(file_path_end="filosovia",path= 'C:/Users/nastj/Downloads/Full Data Set/')
-# df_maxim =createDataFiles(file_path_end="maxim",path= 'C:/Users/nastj/Downloads/Full Data Set/')
-# df_xior = createDataFiles(file_path_end="xior",path= 'C:/Users/nastj/Downloads/Full Data Set/')
-# df_kapel = createDataFiles(file_path_end="calvariekapel-ku-leuven",path= 'C:/Users/nastj/Downloads/Full Data Set/')
+    for filename in os.listdir(path):
+        full_df = os.path.join(path, filename)
+        if os.path.isfile(full_df):
+            pass
+        else:
+            df.to_csv(path + f"{output_name}.csv")
+    return df
 
+def createTestTrainData(df_to_split,output_name):
+    train = df_to_split[df_to_split.result_timestamp.dt.month.isin(range(1,7))]
+    test = df_to_split[df_to_split.result_timestamp.dt.month.isin(range(7, 13))]
+
+    # store datasets in their folders
+    paths = ["./Dataset/train/","./Dataset/test/" ]
+
+    if os.path.isdir(paths[0]) == False:
+        os.mkdir(paths[0])
+    if os.path.isdir(paths[1]) == False:
+        os.mkdir(paths[1])
+
+    for dataset in paths:
+        for filename in os.listdir(dataset):
+            full_df = os.path.join(dataset, filename)
+            if os.path.isfile(full_df):
+                pass
+            else:
+                df.to_csv(dataset + f"{output_name}.csv")
+    # save the train and test file
+    train.to_csv(paths[0] + f"train_{output_name}.csv", index=False)
+    test.to_csv(paths[1]+f"test_{output_name}.csv", index=False)
+
+    return print("The data was split")
+
+createTestTrainData(night_81, "night_81")
+createTestTrainData(night_calverie, "night_calverie")
+createTestTrainData(night_filosovia, "night_filosovia")
+createTestTrainData(night_hears, "night_hears")
+createTestTrainData(night_maxim, "night_maxim")
+createTestTrainData(night_taste, "night_taste")
+createTestTrainData(night_vrijthof, "night_vrijthof")
+createTestTrainData(night_xior, "night_xior")
+
+#########################################
+# Train data manipulations
+#########################################
+
+# Create Holidays and Days of the week
+def createHolidaysDaysoftheWeek(df):
+    df['night_scale'] = pd.to_datetime(df['night_scale'], errors='coerce')
+    df["weekday"] = df['night_scale'].dt.day_name()
+    holiday = ["01-01-2022", "18-04-2022", "16-05-2022", "21-07-2022", "25-08-2022", "01-11-2022", "02-11-2022","11-11-2022", "25-12-2022"]
+    is_holiday = df['Date'].isin(holiday)
+
+    df['Holiday']=is_holiday.map({True: 1, False:0})
+    down_season = [
+        (datetime.strptime("2021-12-31 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-02-13 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-04-02 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-04-19 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-05-28 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-09-26 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-12-24 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2023-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')),
+    ]
+    is_downseason = False
+    for start_date, end_date in down_season:
+        is_downseason = is_downseason | ((df['night_scale'] >= start_date) & (df['night_scale'] <= end_date))
+    df['downseason'] = is_downseason.astype(int)
+    df['night_hour_sq'] = df['night_hour']**2
+    df['night_hour_cu'] = df['night_hour']**3
+
+
+    return print("Successfully created new dates")
+
+for filename in os.listdir("./Dataset/train/"):
+    print("Working on" +filename)
+    csv_train = os.path.join("Dataset/train/", filename)
+    # checking if it is a file
+    if os.path.isfile(csv_train):
+        df_train = pd.read_csv(csv_train) 
+        createHolidaysDaysoftheWeek(df_train)
+        df_train.to_csv(csv_train)
+
+#########################################
+# Test data manipulations
+#########################################
+
+# Create Holidays and Days of the week
+def createHolidaysDaysoftheWeek(df):
+    df['night_scale'] = pd.to_datetime(df['night_scale'], errors='coerce')
+    df["weekday"] = df['night_scale'].dt.day_name()
+    holiday = ["01-01-2022", "18-04-2022", "16-05-2022", "21-07-2022", "25-08-2022", "01-11-2022", "02-11-2022","11-11-2022", "25-12-2022"]
+    is_holiday = df['Date'].isin(holiday)
+
+    df['Holiday']=is_holiday.map({True: 1, False:0})
+    down_season = [
+        (datetime.strptime("2021-12-31 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-02-13 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-04-02 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-04-19 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-05-28 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-09-26 00:00:00", '%Y-%m-%d %H:%M:%S')),
+        (datetime.strptime("2022-12-24 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2023-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')),
+    ]
+    is_downseason = False
+    for start_date, end_date in down_season:
+        is_downseason = is_downseason | ((df['night_scale'] >= start_date) & (df['night_scale'] <= end_date))
+    df['downseason'] = is_downseason.astype(int)
+    df['night_hour_sq'] = df['night_hour']**2
+    df['night_hour_cu'] = df['night_hour']**3
+
+
+    return print("Successfully created new dates")
+
+for filename in os.listdir("./Dataset/test/"):
+    print("Working on" +filename)
+    csv_test = os.path.join("Dataset/test/", filename)
+    # checking if it is a file
+    if os.path.isfile(csv_test):
+        df_test= pd.read_csv(csv_test) 
+        createHolidaysDaysoftheWeek(df_test)
+        df_test.to_csv(csv_test)
 

@@ -13,7 +13,11 @@ def get_df(path):
     df = df[["DATEUTC","LC_HUMIDITY", "LC_DWPTEMP", "LC_WINDSPEED"]]
     df = df.resample('20Min', on='DATEUTC').mean()
     df = df.rename(columns={"DATEUTC": "Datetime"})
-    df.to_csv("weather_data/weather_data.csv")
+    path = "./Dataset/weather_data/"
+    if os.path.isdir(path) == False:
+        os.mkdir(path)
+
+    df.to_csv(f"{path}weather_data.csv")
     return df
 
 df = get_df("C:/Users/nastj/Downloads/dataverse_files/")
