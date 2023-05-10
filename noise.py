@@ -42,26 +42,46 @@ night_vrijthof = collection_dfs[6]
 night_xior = collection_dfs[7]
 night_collection = [night_81, night_calverie, night_filosovia, night_hears, night_maxim, night_taste, night_vrijthof, night_xior]
 
-def mergeEventsNoise(file_path, noise_df, dist_column, output_name):
+
+def mergeEventsNoiseWeather(noise_df, dist_column, output_name):
      # use the dataframes from the collection "night_collection" to merge 
-    df_events_dist = pd.read_excel(file_path)
+    df_events_dist = pd.read_excel("Dataset/events_data/events_distances.xlsx")
     df_events_dist['Date'] = df_events_dist['Date'].apply(lambda x: x.strftime("%d-%m-%Y") if isinstance(x, datetime) else x)
 
-    df = pd.merge(noise_df,df_events_dist[['Date', "Event_name", "Address","Lat","Long","Time","Duration","Event_type","Organizer","Respondents",dist_column]],on='Date', how='outer')
+    df = pd.merge(noise_df,df_events_dist[['Date', "Event_name", "Address","Lat","Long","Time","Duration","Event_type", "Weight_Event_Type","Organizer","Respondents",dist_column]],on='Date', how='left')
+    #weather
+    weather_data = pd.read_csv("Dataset/weather_data/weather_data.csv")
+    weather_data["DATEUTC"] = weather_data["DATEUTC"].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
+    df = pd.merge(df, weather_data, how='left', left_on="result_timestamp", right_on="DATEUTC")
+
     path = "./Dataset/merged_dataset/"
     # check if the directory exists; if not create it
     if os.path.isdir(path) == False:
         os.mkdir(path)
 
-    for filename in os.listdir(path):
-        full_df = os.path.join(path, filename)
-        if os.path.isfile(full_df):
-            pass
-        else:
-            df.to_csv(path + f"{output_name}.csv")
+         # check if the file with output_name already exists
+    output_path = os.path.join(path, f"{output_name}.csv")
+    if os.path.isfile(output_path):
+        print(f"File {output_path} already exists. Skipping CSV export.")
+    else:
+        df.to_csv(output_path)
+        print(f"Exported merged dataframe to {output_path}.")
+
     return df
 
+mergeEventsNoiseWeather(night_81, "Dist_81", "night_81_merged")
+mergeEventsNoiseWeather(night_calverie, "Dist_calvariekapel", "night_calverie_merged")
+mergeEventsNoiseWeather(night_filosovia, "Dist_filosofia", "night_filosovia_merged")
+mergeEventsNoiseWeather(night_hears, "Dist_hears", "night_hears_merged")
+mergeEventsNoiseWeather(night_maxim, "Dist_maxim", "night_maxim_merged")
+mergeEventsNoiseWeather(night_taste, "Dist_taste", "night_taste_merged")
+mergeEventsNoiseWeather(night_vrijthof, "Dist_vrijthof", "night_vrijthof_merged")
+mergeEventsNoiseWeather(night_xior, "Dist_xior", "night_xior_merged")
+
 def createTestTrainData(df_to_split,output_name):
+    path = "Dataset/merged_dataset/"
+    df_to_split= pd.read_csv(os.path.join(path, f"{df_to_split}_merged.csv"))
+    df_to_split["result_timestamp"] = pd.to_datetime(df_to_split["result_timestamp"])
     train = df_to_split[df_to_split.result_timestamp.dt.month.isin(range(1,7))]
     test = df_to_split[df_to_split.result_timestamp.dt.month.isin(range(7, 13))]
 
@@ -86,14 +106,15 @@ def createTestTrainData(df_to_split,output_name):
 
     return print("The data was split")
 
-createTestTrainData(night_81, "night_81")
-createTestTrainData(night_calverie, "night_calverie")
-createTestTrainData(night_filosovia, "night_filosovia")
-createTestTrainData(night_hears, "night_hears")
-createTestTrainData(night_maxim, "night_maxim")
-createTestTrainData(night_taste, "night_taste")
-createTestTrainData(night_vrijthof, "night_vrijthof")
-createTestTrainData(night_xior, "night_xior")
+createTestTrainData("night_81", "night_81")
+createTestTrainData('night_calverie', "night_calverie")
+createTestTrainData("night_filosovia", "night_filosovia")
+createTestTrainData("night_hears", "night_hears")
+createTestTrainData("night_maxim", "night_maxim")
+createTestTrainData("night_taste", "night_taste")
+createTestTrainData("night_vrijthof", "night_vrijthof")
+createTestTrainData("night_xior", "night_xior")
+
 
 #########################################
 # Train data manipulations
@@ -120,45 +141,50 @@ def createHolidaysDaysoftheWeek(df):
     df['night_hour_sq'] = df['night_hour']**2
     df['night_hour_cu'] = df['night_hour']**3
 
-
     return print("Successfully created new dates")
 
+def weight_respondents(df):
+    df["Weight_respondent"] = ""
+    quantiles = df.groupby("Organizer")["Respondents"].quantile([0.33, 0.66]).reset_index()
+    quantiles = quantiles.set_index(['Organizer', 'level_1'])['Respondents'].unstack()
+    quantiles = quantiles.reset_index()
+
+    for organizer in ["Ambiorix", "City of Leuven", "Crimen", "Ekonomika", "HDR", "LOKO", "Politica", "Recup", "Rumba", "Stuk", "VRG", "t Archief"]:
+        mask = df["Organizer"] == organizer
+        quantile_33 = quantiles.loc[quantiles["Organizer"] == organizer, 0.33]
+        quantile_66 = quantiles.loc[quantiles["Organizer"] == organizer, 0.66]
+        if quantile_33.empty or quantile_66.empty:
+            continue
+        quantile_33 = quantile_33.values[0]
+        quantile_66 = quantile_66.values[0]
+        df.loc[mask & (df["Respondents"] <= quantile_33), "Weight_respondent"] = 1
+        df.loc[mask & (df["Respondents"] >= quantile_66), "Weight_respondent"] = 3
+        df.loc[mask & (df["Respondents"] > quantile_33) & (df["Respondents"] < quantile_66), "Weight_respondent"] = 2
+
+    df.loc[df["Event_type"] == "Kermis", "Weight_respondent"] = 4
+    df.loc[df["Event_name"] == "Kerstmis", "Weight_respondent"] = 2
+
+    print("Successfully weight_respondents creation")
+    return df
+
 for filename in os.listdir("./Dataset/train/"):
-    print("Working on" +filename)
-    csv_train = os.path.join("Dataset/train/", filename)
-    # checking if it is a file
-    if os.path.isfile(csv_train):
-        df_train = pd.read_csv(csv_train) 
-        createHolidaysDaysoftheWeek(df_train)
-        df_train.to_csv(csv_train)
+    if filename == 'train_night_hears.csv':
+        print('hears dataset = skip')
+    else:
+        print("Working on" +filename)
+        csv_train = os.path.join("Dataset/train/", filename)
+        # checking if it is a file
+        if os.path.isfile(csv_train):
+            df_train = pd.read_csv(csv_train) 
+            createHolidaysDaysoftheWeek(df_train)
+            weight_respondents(df_train)
+            df_train.to_csv(csv_train)
 
 #########################################
 # Test data manipulations
 #########################################
 
 # Create Holidays and Days of the week
-def createHolidaysDaysoftheWeek(df):
-    df['night_scale'] = pd.to_datetime(df['night_scale'], errors='coerce')
-    df["weekday"] = df['night_scale'].dt.day_name()
-    holiday = ["01-01-2022", "18-04-2022", "16-05-2022", "21-07-2022", "25-08-2022", "01-11-2022", "02-11-2022","11-11-2022", "25-12-2022"]
-    is_holiday = df['Date'].isin(holiday)
-
-    df['Holiday']=is_holiday.map({True: 1, False:0})
-    down_season = [
-        (datetime.strptime("2021-12-31 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-02-13 00:00:00", '%Y-%m-%d %H:%M:%S')),
-        (datetime.strptime("2022-04-02 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-04-19 00:00:00", '%Y-%m-%d %H:%M:%S')),
-        (datetime.strptime("2022-05-28 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-09-26 00:00:00", '%Y-%m-%d %H:%M:%S')),
-        (datetime.strptime("2022-12-24 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2023-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')),
-    ]
-    is_downseason = False
-    for start_date, end_date in down_season:
-        is_downseason = is_downseason | ((df['night_scale'] >= start_date) & (df['night_scale'] <= end_date))
-    df['downseason'] = is_downseason.astype(int)
-    df['night_hour_sq'] = df['night_hour']**2
-    df['night_hour_cu'] = df['night_hour']**3
-
-
-    return print("Successfully created new dates")
 
 for filename in os.listdir("./Dataset/test/"):
     print("Working on" +filename)
@@ -167,5 +193,6 @@ for filename in os.listdir("./Dataset/test/"):
     if os.path.isfile(csv_test):
         df_test= pd.read_csv(csv_test) 
         createHolidaysDaysoftheWeek(df_test)
+        weight_respondents(df_test)
         df_test.to_csv(csv_test)
 
