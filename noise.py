@@ -45,10 +45,10 @@ night_collection = [night_81, night_calverie, night_filosovia, night_hears, nigh
 
 def mergeEventsNoiseWeather(noise_df, dist_column, output_name):
      # use the dataframes from the collection "night_collection" to merge 
-    df_events_dist = pd.read_excel("Dataset/events_data/events_distances.xlsx")
-    df_events_dist['Date'] = df_events_dist['Date'].apply(lambda x: x.strftime("%d-%m-%Y") if isinstance(x, datetime) else x)
-
-    df = pd.merge(noise_df,df_events_dist[['Date', "Event_name", "Address","Lat","Long","Time","Duration","Event_type", "Weight_Event_Type","Organizer","Respondents",dist_column]],on='Date', how='left')
+    df_events_dist = pd.read_csv("Dataset/events_data/events_distances.csv")
+    
+    df = pd.merge(noise_df,df_events_dist[['Date', "Event_name", "Address","Event_type", "Weight_Event_Type","Organizer","Respondents",dist_column]],on='Date', how='outer')
+    df.rename(columns={dist_column: 'Distance'}, inplace=True)
     #weather
     weather_data = pd.read_csv("Dataset/weather_data/weather_data.csv")
     weather_data["DATEUTC"] = weather_data["DATEUTC"].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
