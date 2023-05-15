@@ -167,6 +167,10 @@ def weight_respondents(df):
     print("Successfully weight_respondents creation")
     return df
 
+def Event_Score(df):
+    df["Event_Score"] = df["Weight_Event_Type"]*df["Weight_respondent"]*df["Distance"]
+    return print("Events_score created")
+
 for filename in os.listdir("./Dataset/train/"):
     if filename == 'train_night_hears.csv':
         print('hears dataset = skip')
@@ -178,6 +182,7 @@ for filename in os.listdir("./Dataset/train/"):
             df_train = pd.read_csv(csv_train) 
             createHolidaysDaysoftheWeek(df_train)
             weight_respondents(df_train)
+            Event_Score(df_train)
             df_train.to_csv(csv_train)
 
 #########################################
@@ -194,5 +199,6 @@ for filename in os.listdir("./Dataset/test/"):
         df_test= pd.read_csv(csv_test) 
         createHolidaysDaysoftheWeek(df_test)
         weight_respondents(df_test)
+        Event_Score(df_test)
         df_test.to_csv(csv_test)
 
