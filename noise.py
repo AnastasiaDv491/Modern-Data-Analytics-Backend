@@ -167,9 +167,17 @@ def weight_respondents(df):
     print("Successfully weight_respondents creation")
     return df
 
-def Event_Score(df):
+
+def Total_Event_Score(df):
     df["Event_Score"] = df["Weight_Event_Type"]*df["Weight_respondent"]*df["Distance"]
-    return print("Events_score created")
+    df["Event_Score"] = pd.to_numeric(df["Event_Score"], errors='coerce').fillna(0)
+    Total_Event_Scores= df.groupby(["result_timestamp"])["Event_Score"].sum().reset_index()
+    print(Total_Event_Scores)
+    df = pd.merge(df, Total_Event_Scores, on="result_timestamp", how="left")
+    df.rename(columns={"Event_Score_y": "Total_Event_Score"}, inplace=True)
+
+    print("Total event score created")
+    return df
 
 for filename in os.listdir("./Dataset/train/"):
     if filename == 'train_night_hears.csv':
@@ -182,7 +190,7 @@ for filename in os.listdir("./Dataset/train/"):
             df_train = pd.read_csv(csv_train) 
             createHolidaysDaysoftheWeek(df_train)
             weight_respondents(df_train)
-            Event_Score(df_train)
+            Total_Event_Score(df_train)
             df_train.to_csv(csv_train)
 
 #########################################
@@ -199,6 +207,6 @@ for filename in os.listdir("./Dataset/test/"):
         df_test= pd.read_csv(csv_test) 
         createHolidaysDaysoftheWeek(df_test)
         weight_respondents(df_test)
-        Event_Score(df_test)
+        Total_Event_Score(df_test)
         df_test.to_csv(csv_test)
 
