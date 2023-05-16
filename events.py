@@ -11,7 +11,7 @@ from geopy.distance import lonlat, distance
 
 os.chdir("./Dataset/events_data/")
 #dataframe with locations
-Events_full = pd.read_excel("Events_data_full.xlsx")
+Events_full = pd.read_excel("Events_data_full_KADI.xlsx")
 
 addresses = np.unique(Events_full["Address"])
 Locations_df = pd.DataFrame({'Address': addresses})
@@ -71,7 +71,7 @@ for index, row in microphones.iterrows():
          print("79",lati2, long2)
          print(pd.isna(lati2))
          if (pd.isna(lati2 or pd.isna(long2))) == True:
-             d = "na"
+             d = "nan"
              Events_full.iloc[i,j] = d
              distances.append(d)
              i += 1
@@ -103,6 +103,8 @@ def weight_event(event_type):
         return 3
 Events_full['Weight_Event_Type'] = Events_full['Event_type'].apply(weight_event)
 
+Events_full.head()
+
 # combined weights per event --> after split
 # sum all events per day --> after split
-Events_full.to_excel('events_distances.xlsx')
+Events_full.to_csv('events_distances.csv')
