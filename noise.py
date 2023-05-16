@@ -190,8 +190,8 @@ for filename in os.listdir("./Dataset/train/"):
             df_train = pd.read_csv(csv_train) 
             createHolidaysDaysoftheWeek(df_train)
             weight_respondents(df_train)
-            Total_Event_Score(df_train)
-            df_train.to_csv(csv_train)
+            score = Total_Event_Score(df_train)
+            score.to_csv(csv_train)
 
 #########################################
 # Test data manipulations
@@ -207,6 +207,6 @@ for filename in os.listdir("./Dataset/test/"):
         df_test= pd.read_csv(csv_test) 
         createHolidaysDaysoftheWeek(df_test)
         weight_respondents(df_test)
-        Total_Event_Score(df_test)
-        df_test.to_csv(csv_test)
+        score = Total_Event_Score(df_test)
+        score.to_csv(csv_test)
 
