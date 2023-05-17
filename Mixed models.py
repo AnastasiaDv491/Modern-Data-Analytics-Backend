@@ -130,7 +130,7 @@ def Predictions(est, df):
 
 
 
-if os.path.isdir("Predictions/Predictions/")) == False:
+if os.path.isdir("Predictions/Predictions/") == False:
     os.mkdir("Predictions/Predictions/")
 
 #Delete test_night_file if still exists
@@ -153,12 +153,10 @@ for pred_file, test_file in zip(Pred, Test):
         
     # Assign a name to y_pred Series
     y_pred.name = "y_pred"
-        
     # Merge DataFrame with y_pred based on index
     df_y_pred = pd.merge(df, y_pred, left_index=True, right_index=True)
-        
-    # Save the merged DataFrame to a new file
     
+    # Save the merged DataFrame to a new file
     output_file = f"Predictions/Predictions/y_pred_{test_file}"
     df_y_pred.to_csv(output_file)
     print("Saved merged predictions to " + output_file)
