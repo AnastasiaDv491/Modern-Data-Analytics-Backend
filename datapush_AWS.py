@@ -9,6 +9,7 @@ def upload_to_s3(local_file_path, bucket_name, s3_key):
     s3 = boto3.client(
         's3',
         aws_access_key_id="",
+        aws_secret_access_key = ""
     )
 
     try:
@@ -26,4 +27,12 @@ for file_name in files_to_upload:
     s3_key = file_name
     upload_to_s3(local_file_path, bucket_name, s3_key)
 
-upload_to_s3("Dataset/events_data/Fakbars.csv", bucket_name, "Fakbars.csv")
+events_data_upload = "Dataset/events_data/"
+events_filename = ["events_distances.csv", "Fakbars.csv", "mic_locations.xlsx"]
+
+for file_name in events_filename:
+    local_file_path = os.path.join(events_data_upload, file_name)
+    s3_key = file_name
+    upload_to_s3(local_file_path, bucket_name, s3_key)
+
+upload_to_s3("Dataset/weather_data/weather_data.csv", bucket_name, "weather_data.csv")
