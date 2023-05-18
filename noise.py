@@ -169,7 +169,7 @@ def weight_respondents(df):
 
 
 def Total_Event_Score(df):
-    df["Event_Score"] = df["Weight_Event_Type"]*df["Weight_respondent"]*df["Distance"]
+    df["Event_Score"] = df["Weight_Event_Type"]*df["Weight_respondent"]/df["Distance"]
     df["Event_Score"] = pd.to_numeric(df["Event_Score"], errors='coerce').fillna(0)
     Total_Event_Scores= df.groupby(["result_timestamp"])["Event_Score"].sum().reset_index()
     print(Total_Event_Scores)
