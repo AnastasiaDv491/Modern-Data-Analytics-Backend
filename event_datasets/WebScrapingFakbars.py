@@ -50,4 +50,4 @@ for index, row in df.iterrows():
     df.at[index, 'Latitude'] = latitude
 
 # Sla de dataset op naar een nieuw CSV-bestand
-df.to_csv("/Users/charlotte/Desktop/MDA/Data/Fakbars.csv", index=False)
+df.to_csv("./Dataset/events_data/Fakbars.csv", index=False)

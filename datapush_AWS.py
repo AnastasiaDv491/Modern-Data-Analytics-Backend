@@ -3,13 +3,12 @@ import os
 import sys
 
 bucket_name = 'mda-test'
-local_folder_path = 'Dataset/test/'
+local_folder_path = 'Predictions/Predictions/'
 
 def upload_to_s3(local_file_path, bucket_name, s3_key):
     s3 = boto3.client(
         's3',
         aws_access_key_id="",
-        aws_secret_access_key=""
     )
 
     try:
@@ -20,9 +19,11 @@ def upload_to_s3(local_file_path, bucket_name, s3_key):
         print(f"Error uploading file to S3: {e}")
 
 # List of file names you want to upload
-files_to_upload = os.listdir('Dataset/test/')
+files_to_upload = os.listdir('Predictions/Predictions/')
 
 for file_name in files_to_upload:
     local_file_path = os.path.join(local_folder_path, file_name)
     s3_key = file_name
     upload_to_s3(local_file_path, bucket_name, s3_key)
+
+upload_to_s3("Dataset/events_data/Fakbars.csv", bucket_name, "Fakbars.csv")
