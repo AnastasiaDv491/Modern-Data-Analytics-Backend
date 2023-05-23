@@ -29,7 +29,7 @@ LC_WINDSPEED night_hour*LC_WINDSPEED night_hour_sq*LC_WINDSPEED night_hour_cu*LC
 Total_Event_Score night_hour*Total_Event_Score night_hour_sq*Total_Event_Score night_hour_cu*Total_Event_Score
 / solution;
 
-random intercept night_hour night_hour_sq night_hour_cu/ subject=Date type=un; 
+random intercept night_hour night_hour_sq/ subject=Date type=un; 
 ods output solutionf = fixed_out; 
 run; 
 
