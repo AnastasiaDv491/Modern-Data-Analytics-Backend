@@ -1,4 +1,5 @@
-# Modern-Data-Analytics-Backend
+# Modern-Data-Analytics-Backend ⚙️
+<img src ="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Police_of_Belgium_insignia.svg/1200px-Police_of_Belgium_insignia.svg.png" width="200" height="200" />
 
 feature_creation.py:
 - def createLatLongCols(df)
@@ -24,23 +25,28 @@ Depending on your configurations the following dependencies apply:
 For access to the SAS OnDemand Hosted Servers three additional jar files should be stored in the saspy/java/iomclient directory of the SASPy installation in your Python environment. The jar files can be downloaded from this link: https://support.sas.com/downloads/package.htm?pid=2494
 
 # File structure
-@AnastasiaDv491: when do the data_fetching and datapush file need to be run?
-
+To get the raw data into `parquet` files, you have to run `data_fetching.py` 
 The repository exists of the following .py files:
-    1. events.py 
-        - creation of events_distance and event_weights
-    2. weather.py 
-        - select variables and reduce to 20 min scale
-    3. noise.py 
-        - select night hours only
-        - merge with events and weather data 
-        - test/train split
-        - creation of additional variables        
-    4. Mixed models.py
-        - running model on train set
-        - create predicitons for test set
-    5.
-    6.
-
+1. `events.py` 
+- creation of events_distance and event_weights
+2. `weather.py` 
+- select variables and reduce to 20 min scale
+3. `noise.py` 
+- select night hours only
+- merge with events and weather data 
+- test/train split
+- creation of additional variables        
+4. `Mixed models.py`
+- running model on train set
+- create predicitons for test set
+5.
+6.
 
 The files should be run in this order to respect the dependencies between the files.
+
+## AWS
+The final files are pushed to AWS S3 storage. This is done via  `datapush_AWS.py` file. You will need your access keys and S3 bucket to push the files to AWS. The following files/folders have to be pushed to the front-end repository to run:
+- Predictions/
+- events_data/
+- events_distances.csv, Fakbars.csv, mic_locations.xlsx
+- weather_data.csv
