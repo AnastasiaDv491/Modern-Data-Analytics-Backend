@@ -16,7 +16,7 @@ sas
 #sas code to run
 mixed_model_code = """ 
 proc mixed data=df_sas;
-class Date weekday Organizer downseason;
+class Date weekday downseason;
 model laeq=night_hour  night_hour_sq night_hour_cu 
 downseason night_hour*downseason night_hour_sq*downseason night_hour_cu*downseason 
 weekday night_hour*weekday night_hour_sq*weekday night_hour_cu*weekday
