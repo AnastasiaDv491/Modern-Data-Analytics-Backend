@@ -191,7 +191,8 @@ for filename in os.listdir("./Dataset/train/"):
             createHolidaysDaysoftheWeek(df_train)
             weight_respondents(df_train)
             score = Total_Event_Score(df_train)
-            score.to_csv(csv_train)
+            score_remove_dup=score.drop_duplicates(subset=["night_scale"])
+            score_remove_dup.to_csv(csv_train)
 
 #########################################
 # Test data manipulations
