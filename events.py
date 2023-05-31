@@ -41,7 +41,7 @@ def dist(lat1, lon1, lat2, lon2):
     
     loc1 = (lat1, lon1)
     loc2 = (lat2, lon2)
-    distance_km = distance(lonlat(*loc1), lonlat(*loc2)).km
+    distance_km = distance(loc1, loc2).km  
     
     return distance_km
 
@@ -56,39 +56,28 @@ Events_full['Dist_vrijthof'] = 0
 
 distances = []
 
-j = 14 
+j = 14  # start in the 14 column (first free)
 i = 0
-c = 0
 
 for index, row in microphones.iterrows():
-    
     lati1 = row['Lat']
     long1 =row['Long']
-    print("75",lati1, long1)
     for index, row in Events_full.iterrows():
-         lati2 = row['Lat']
-         long2 = row['Long']
-         print("79",lati2, long2)
-         print(pd.isna(lati2))
-         if (pd.isna(lati2 or pd.isna(long2))) == True:
-             d = "nan"
-             Events_full.iloc[i,j] = d
-             distances.append(d)
-             i += 1
-         else:
-            print("87",lati1, long1,lati2, long2)
-
-            d = dist(lati1, long1, lati2, long2)
+        lati2 = row['Lat']
+        long2 = row['Long']
+        if (pd.isna(lati2) or pd.isna(long2)) == True:   # if no lat or long available --> distance = nan
+            d = "nan"
             Events_full.iloc[i,j] = d
             distances.append(d)
             i += 1
-    j += 1
-    c += 1
-    if c > 0:
-        i = 0
+        else:
+            d = dist(lati1, long1, lati2, long2)
+            Events_full.iloc[i,j] = d
+            distances.append(d)
+        i += 1
+    j += 1      # next column                 
+    i = 0   # when events are done recet rows to zero
  
-print(Events_full.head)
-
 # weights for event type
 def weight_event(event_type):
     if event_type == "Cantus":
@@ -102,8 +91,6 @@ def weight_event(event_type):
     else:
         return 3
 Events_full['Weight_Event_Type'] = Events_full['Event_type'].apply(weight_event)
-
-Events_full.head()
 
 # combined weights per event --> after split
 # sum all events per day --> after split

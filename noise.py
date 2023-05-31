@@ -8,13 +8,14 @@ from sklearn.model_selection import train_test_split
 # Time regrouping
 # Noise.py
 
-def TimeBasedRegrouping(parquet):
+def TimeBasedRegrouping(parquet):  # parket files are faster
     df = pd.read_parquet(parquet)
-
+    #select night hours only
     df = df.loc[(df['result_timestamp'].dt.hour <= 7) | (df['result_timestamp'].dt.hour >= 19)]
+    #night from monday evening to tuesday morning counted as 'monday'
     df.loc[:, 'night_scale'] = (df['result_timestamp'] - pd.Timedelta(hours=8)).dt.strftime('%d-%m-%Y %H:%M')
     df['night_scale'] = pd.to_datetime(df['night_scale'])
-    #night from monday to tuesday counted as monday
+    # time after 19u00 in hours
     df.loc[:, 'night_hour'] = (df['night_scale'].dt.hour + df['night_scale'].dt.minute/60) - 11
     df.loc[:, 'Date'] = df['night_scale'].dt.strftime('%d-%m-%Y')
 
@@ -124,10 +125,6 @@ createTestTrainData("night_xior", "night_xior")
 def createHolidaysDaysoftheWeek(df):
     df['night_scale'] = pd.to_datetime(df['night_scale'], errors='coerce')
     df["weekday"] = df['night_scale'].dt.day_name()
-    holiday = ["01-01-2022", "18-04-2022", "16-05-2022", "21-07-2022", "25-08-2022", "01-11-2022", "02-11-2022","11-11-2022", "25-12-2022"]
-    is_holiday = df['Date'].isin(holiday)
-
-    df['Holiday']=is_holiday.map({True: 1, False:0})
     down_season = [
         (datetime.strptime("2021-12-31 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-02-13 00:00:00", '%Y-%m-%d %H:%M:%S')),
         (datetime.strptime("2022-04-02 00:00:00", '%Y-%m-%d %H:%M:%S'), datetime.strptime("2022-04-19 00:00:00", '%Y-%m-%d %H:%M:%S')),
@@ -172,7 +169,6 @@ def Total_Event_Score(df):
     df["Event_Score"] = df["Weight_Event_Type"]*df["Weight_respondent"]/df["Distance"]
     df["Event_Score"] = pd.to_numeric(df["Event_Score"], errors='coerce').fillna(0)
     Total_Event_Scores= df.groupby(["result_timestamp"])["Event_Score"].sum().reset_index()
-    print(Total_Event_Scores)
     df = pd.merge(df, Total_Event_Scores, on="result_timestamp", how="left")
     df.rename(columns={"Event_Score_y": "Total_Event_Score"}, inplace=True)
 

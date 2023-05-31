@@ -6,7 +6,6 @@ def get_df(path):
     df=pd.DataFrame()
     for file in os.listdir(path):
         if file.endswith('.csv'):
-            print(path+file)
             aux=pd.read_csv(path+file)
             df = pd.concat([df, aux], ignore_index=True)
     df['DATEUTC'] = pd.to_datetime(df['DATEUTC'],format='%Y-%m-%d %H:%M:%S')
@@ -15,11 +14,9 @@ def get_df(path):
     df = df.rename(columns={"DATEUTC": "Datetime"})
     path = "./Dataset/weather_data/"
     if os.path.isdir(path) == False:
-        os.mkdir(path)
+        os.mkdir(path)  #make direcitory
 
     df.to_csv(f"{path}weather_data.csv")
     return df
 
 df = get_df("C:/Users/nastj/Downloads/dataverse_files/")
-
-print(df)

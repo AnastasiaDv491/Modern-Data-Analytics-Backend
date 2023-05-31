@@ -54,34 +54,3 @@ df = pd.DataFrame({'Name': names, 'Address': addresses, 'Date': dates})
 
 print(df)
 
-##################################################
-
-import pandas as pd
-
-# API key voor Google Maps Geocoding API
-API_KEY = 'EventsEkonomika'
-
-# Functie om longitudinale en latitudinale gegevens op te halen voor een adres
-def get_lat_long(address):
-    url = f'https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={API_KEY}'
-    response = requests.get(url).json()
-    if response['status'] == 'OK':
-        longitude = response['results'][0]['geometry']['location']['lng']
-        latitude = response['results'][0]['geometry']['location']['lat']
-    else:
-        longitude, latitude = None, None
-    return longitude, latitude
-
-# Voeg de longitudinale en latitudinale kolommen toe aan de dataset
-df['Longitude'] = ""
-df['Latitude'] = ""
-
-# Loop door de dataset en vul de longitudinale en latitudinale kolommen in
-for index, row in df.iterrows():
-    address = row['Address']
-    longitude, latitude = get_lat_long(address)
-    df.at[index, 'Longitude'] = longitude
-    df.at[index, 'Latitude'] = latitude
-
-# Sla de dataset op naar een nieuw CSV-bestand
-df.to_csv("/Users/charlotte/Desktop/MDA/Data/EventsEkonomika.csv", index=False)
