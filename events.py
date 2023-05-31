@@ -71,7 +71,7 @@ for index, row in microphones.iterrows():
         else:
             d = dist(lati1, long1, lati2, long2)
             Events_full.iloc[i,j] = d
-        i += 1
+            i += 1
     j += 1      # next column                 
     i = 0   # when events are done recet rows to zero
  
