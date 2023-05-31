@@ -54,7 +54,6 @@ Events_full['Dist_maxim'] = 0
 Events_full['Dist_taste'] = 0
 Events_full['Dist_vrijthof'] = 0
 
-distances = []
 
 j = 14  # start in the 14 column (first free)
 i = 0
@@ -68,12 +67,10 @@ for index, row in microphones.iterrows():
         if (pd.isna(lati2) or pd.isna(long2)) == True:   # if no lat or long available --> distance = nan
             d = "nan"
             Events_full.iloc[i,j] = d
-            distances.append(d)
             i += 1
         else:
             d = dist(lati1, long1, lati2, long2)
             Events_full.iloc[i,j] = d
-            distances.append(d)
         i += 1
     j += 1      # next column                 
     i = 0   # when events are done recet rows to zero
