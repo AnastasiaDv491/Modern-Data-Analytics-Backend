@@ -42,7 +42,7 @@ The repository exists of the following .py files:
 4. `Mixed models.py`
 - running model on train set
 - create predicitons for test set
-5. Three based models.ipynb
+5. Tree based models.ipynb
 - random forest
 - gradient boosting
 - adding predictions for test set
