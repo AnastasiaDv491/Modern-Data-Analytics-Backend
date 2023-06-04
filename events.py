@@ -58,8 +58,6 @@ j = 14
 i = 0
 
 for index, row in microphones.iterrows():
-    
-    for index, row in microphones.iterrows():
     lati1 = row['Lat']
     long1 =row['Long']
     for index, row in Events_full.iterrows():
