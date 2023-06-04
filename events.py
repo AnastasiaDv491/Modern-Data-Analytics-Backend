@@ -58,34 +58,25 @@ distances = []
 
 j = 14 
 i = 0
-c = 0
 
 for index, row in microphones.iterrows():
     
+    for index, row in microphones.iterrows():
     lati1 = row['Lat']
     long1 =row['Long']
-    print("75",lati1, long1)
     for index, row in Events_full.iterrows():
-         lati2 = row['Lat']
-         long2 = row['Long']
-         print("79",lati2, long2)
-         print(pd.isna(lati2))
-         if (pd.isna(lati2 or pd.isna(long2))) == True:
-             d = "nan"
-             Events_full.iloc[i,j] = d
-             distances.append(d)
-             i += 1
-         else:
-            print("87",lati1, long1,lati2, long2)
-
+        lati2 = row['Lat']
+        long2 = row['Long']
+        if (pd.isna(lati2) or pd.isna(long2)) == True:   # if no lat or long available --> distance = nan
+            d = "nan"
+            Events_full.iloc[i,j] = d
+            i += 1
+        else:
             d = dist(lati1, long1, lati2, long2)
             Events_full.iloc[i,j] = d
-            distances.append(d)
             i += 1
-    j += 1
-    c += 1
-    if c > 0:
-        i = 0
+    j += 1      # next column                 
+    i = 0   # when events are done recet rows to zero
  
 print(Events_full.head)
 
