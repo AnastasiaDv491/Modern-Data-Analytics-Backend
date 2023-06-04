@@ -4,11 +4,6 @@ import numpy as np
 from geopy.geocoders import Nominatim
 from geopy.distance import distance
 
-# TODO:
-# combine date and time to one variable
-# + merge noise and events
-# + distances
-
 os.chdir("./Dataset/events_data/")
 #dataframe with locations
 Events_full = pd.read_excel("Events_data_full_KADI.xlsx")

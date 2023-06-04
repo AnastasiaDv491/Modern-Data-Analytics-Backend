@@ -1,13 +1,8 @@
 import glob
 import pandas as pd
 from datetime import datetime
-from geopy.geocoders import Nominatim
-from boto.s3.key import Key
 import os
-from cProfile import label
-from turtle import goto
 import pandas as pd
-from geopy.distance import lonlat, distance
 import os
 
 

@@ -1,6 +1,5 @@
 import boto3
 import os
-import sys
 
 bucket_name = 'mda-test'
 local_folder_path = 'Predictions/Predictions/'

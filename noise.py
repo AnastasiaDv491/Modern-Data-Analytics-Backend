@@ -1,9 +1,7 @@
 import pandas as pd
 import os
-from geopy.geocoders import Nominatim
 import pandas as pd
 from datetime import datetime
-from sklearn.model_selection import train_test_split
 
 # Time regrouping
 # Noise.py
