@@ -13,7 +13,10 @@ authkey= 'oda',
 encoding ='utf-8')
 sas
 
-#sas code to run
+# For see the structure of the observed variance please run 'example Observed variance structure.ipynb' in the Extra file
+
+#Modelling part
+##sas code to run
 mixed_model_code = """ 
 proc mixed data=df_sas;
 class Date weekday downseason;
