@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import numpy as np
 from geopy.geocoders import Nominatim
-from geopy.distance import lonlat, distance
+from geopy.distance import distance
 
 # TODO:
 # combine date and time to one variable
@@ -41,7 +41,7 @@ def dist(lat1, lon1, lat2, lon2):
     
     loc1 = (lat1, lon1)
     loc2 = (lat2, lon2)
-    distance_km = distance(lonlat(*loc1), lonlat(*loc2)).km
+    distance_km = distance(loc1, loc2).km
     
     return distance_km
 
@@ -54,8 +54,6 @@ Events_full['Dist_maxim'] = 0
 Events_full['Dist_taste'] = 0
 Events_full['Dist_vrijthof'] = 0
 
-distances = []
-
 j = 14 
 i = 0
 
@@ -67,7 +65,7 @@ for index, row in microphones.iterrows():
     for index, row in Events_full.iterrows():
         lati2 = row['Lat']
         long2 = row['Long']
-        if (pd.isna(lati2) or pd.isna(long2)) == True:   # if no lat or long available --> distance = nan
+        if (pd.isna(lati2) or pd.isna(long2)) == True:   
             d = "nan"
             Events_full.iloc[i,j] = d
             i += 1
@@ -78,7 +76,6 @@ for index, row in microphones.iterrows():
     j += 1      # next column                 
     i = 0   # when events are done recet rows to zero
  
-print(Events_full.head)
 
 # weights for event type
 def weight_event(event_type):
@@ -93,8 +90,6 @@ def weight_event(event_type):
     else:
         return 3
 Events_full['Weight_Event_Type'] = Events_full['Event_type'].apply(weight_event)
-
-Events_full.head()
 
 # combined weights per event --> after split
 # sum all events per day --> after split
